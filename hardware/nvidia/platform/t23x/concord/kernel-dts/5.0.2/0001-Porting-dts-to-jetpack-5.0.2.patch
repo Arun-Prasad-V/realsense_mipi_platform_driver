@@ -1,0 +1,27 @@
+From df47ea4f23998a3de2376a703e4d98d5fa10f1ae Mon Sep 17 00:00:00 2001
+From: Arun-Prasad-V <arun.prasad.v@intel.com>
+Date: Fri, 15 Nov 2024 17:48:26 +0530
+Subject: [PATCH] Porting dts to jetpack 5.0.2
+
+Signed-off-by: Arun-Prasad-V <arun.prasad.v@intel.com>
+---
+ tegra234-p3701-0000-p3737-0000.dts | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/tegra234-p3701-0000-p3737-0000.dts b/tegra234-p3701-0000-p3737-0000.dts
+index 0a4d2bb..e96bca4 100644
+--- a/tegra234-p3701-0000-p3737-0000.dts
++++ b/tegra234-p3701-0000-p3737-0000.dts
+@@ -19,7 +19,8 @@
+ #include "tegra234-power-tree-p3701-0000-p3737-0000.dtsi"
+ #include "tegra234-dcb-p3701-0000-a02-p3737-0000-a01.dtsi"
+ #include <tegra234-soc/mods-simple-bus.dtsi>
+-#include "cvb/tegra234-p3737-camera-modules.dtsi"
++/*#include "cvb/tegra234-p3737-camera-modules.dtsi"*/
++#include "cvb/tegra234-camera-d4xx.dtsi"
+ 
+ #include <t234-common-cvm/tegra234-cpuidle.dtsi>
+ #include <t234-common-cvm/tegra234-thermal.dtsi>
+-- 
+2.34.1
+
