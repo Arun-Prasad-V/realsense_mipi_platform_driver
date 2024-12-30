@@ -13,6 +13,7 @@ The system shall include:
 ### Links
 - Intel® RealSense™ camera driver for GMSL* interface [Front Page](./README.md)
 - Jetson AGX Orin™ board setup - AGX Orin™ [JetPack 6.0](./README_JP6.md) setup guide
+- Jetson AGX Orin™ board setup - AGX Orin™ [JetPack 5.0.2](./README_JP5.md) setup guide
 - Jetson AGX Xavier™ board setup - AGX Xavier™ [JetPack 5.x.2](./README_JP5.md) setup guide
 - Jetson AGX Xavier™ board setup - AGX Xavier™ [JetPack 4.6.1](./README_JP4.md) setup guide
 - Build Tools manual page [Build Manual page](./README_tools.md)
@@ -109,7 +110,9 @@ Building with `build_all.sh`
 The necessary files are:
 
 - kernel image `images/<JetPack_version>/arch/arm64/boot/Image`
-- dtb `images/5.0.2/arch/arm64/boot/dts/nvidia/tegra194-p2888-0001-p2822-0000.dtb`
+- dtb
+  - for Xavier AGX: `images/5.0.2/arch/arm64/boot/dts/nvidia/tegra194-p2888-0001-p2822-0000.dtb`
+  - for Orin AGX: `images/5.0.2/arch/arm64/boot/dts/nvidia/tegra234-p3701-0000-p3737-0000.dtb`
 - D457 driver `images/5.0.2/drivers/media/i2c/d4xx.ko`
 - UVC Video driver `images/5.0.2/drivers/media/usb/uvc/uvcvideo.ko`
 - V4L2 Core Video driver `images/5.0.2/drivers/media/v4l2-core/videobuf-core.ko`
@@ -118,7 +121,12 @@ The necessary files are:
 Copy build results from Host to Jetson target `10.0.0.116` user `nvidia`
 ```
 scp ./images/5.0.2/arch/arm64/boot/Image nvidia@10.0.0.116:~/
-scp ./images/5.0.2/arch/arm64/boot/dts/nvidia/tegra194-p2888-0001-p2822-0000.dtb nvidia@10.0.0.116:~/
+
+/* for Xavier AGX: */
+    scp ./images/5.0.2/arch/arm64/boot/dts/nvidia/tegra194-p2888-0001-p2822-0000.dtb nvidia@10.0.0.116:~/
+/* for Orin AGX: */
+    scp ./images/5.0.2/arch/arm64/boot/dts/nvidia/tegra234-p3701-0000-p3737-0000.dtb nvidia@10.0.0.116:~/
+
 scp ./images/5.0.2/drivers/media/i2c/d4xx.ko nvidia@10.0.0.116:~/
 scp ./images/5.0.2/drivers/media/usb/uvc/uvcvideo.ko nvidia@10.0.0.116:~/
 scp ./images/5.0.2/drivers/media/v4l2-core/videobuf-core.ko nvidia@10.0.0.116:~/
@@ -130,7 +138,12 @@ Copy them to the right places on Jetson target:
 sudo mkdir /boot/d457
 sudo mkdir /lib/modules/$(uname -r)/updates
 sudo cp Image /boot/d457/
-sudo cp tegra194-p2888-0001-p2822-0000.dtb /boot/d457/
+
+/* for Xavier AGX: */
+    sudo cp tegra194-p2888-0001-p2822-0000.dtb /boot/d457/
+/* for Orin AGX: */
+    sudo cp tegra234-p3701-0000-p3737-0000.dtb /boot/d457/
+
 sudo cp d4xx.ko /lib/modules/$(uname -r)/updates/
 sudo cp uvcvideo.ko /lib/modules/$(uname -r)/updates/
 sudo cp videobuf-core.ko /lib/modules/$(uname -r)/updates/
@@ -139,6 +152,8 @@ sudo depmod
 ```
 
 2. Edit `/boot/extlinux/extlinux.conf` primary boot option's LINUX/FDT lines to use built kernel image and dtb file:
+
+for Xavier AGX:
 
     ```
     LINUX /boot/d457/Image
@@ -167,6 +182,34 @@ LABEL d457
       APPEND ${cbootargs} root=/dev/mmcblk0p1 rw rootwait rootfstype=ext4 console=ttyTCU0,115200n8 console=tty0 fbcon=map:0 net.ifnames=0 rootfstype=ext4
 ```
 
+for Orin AGX:
+
+    ```
+    LINUX /boot/d457/Image
+    FDT /boot/d457/tegra234-p3701-0000-p3737-0000.dtb
+    ```
+
+```
+$ cat /boot/extlinux/extlinux.conf
+TIMEOUT 30
+DEFAULT d457
+
+MENU TITLE L4T boot options
+
+LABEL primary
+      MENU LABEL primary kernel
+      LINUX /boot/Image
+      FDT /boot/dtb/kernel_tegra234-p3701-0000-p3737-0000.dtb
+      INITRD /boot/initrd
+      APPEND ${cbootargs} root=/dev/mmcblk0p1 rw rootwait rootfstype=ext4 mminit_loglevel=4 console=ttyTCU0,115200 console=ttyAMA0,115200 console=tty0 firmware_class.path=/etc/firmware fbcon=map:0 net.ifnames=0 nv-auto-config
+
+LABEL d457
+      MENU LABEL d457 kernel
+      LINUX /boot/d457/Image
+      FDT /boot/d457/tegra234-p3701-0000-p3737-0000.dtb
+      INITRD /boot/initrd
+      APPEND ${cbootargs} root=/dev/mmcblk0p1 rw rootwait rootfstype=ext4 mminit_loglevel=4 console=ttyTCU0,115200 console=ttyAMA0,115200 console=tty0 firmware_class.path=/etc/firmware fbcon=map:0 net.ifnames=0 nv-auto-config
+```
 
 3. Make D457 I2C module autoload at boot time:
     ```

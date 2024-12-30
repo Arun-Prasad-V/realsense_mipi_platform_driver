@@ -11,13 +11,14 @@ fi
 # Default to single camera DT for JetPack 5.0.2
 # single - jp5 [default] single cam GMSL board
 # dual - dual cam GMSL board SC20220126
-JP5_D4XX_DTSI="tegra194-camera-d4xx-single.dtsi"
+XAVIER_AGX_JP5_D4XX_DTSI="tegra194-camera-d4xx-single.dtsi"
+ORIN_AGX_JP5_D4XX_DTSI="tegra234-camera-d4xx.dtsi"
 if [[ "$1" == "--one-cam" ]]; then
-    JP5_D4XX_DTSI="tegra194-camera-d4xx-single.dtsi"
+    XAVIER_AGX_JP5_D4XX_DTSI="tegra194-camera-d4xx-single.dtsi"
     shift
 fi
 if [[ "$1" == "--dual-cam" ]]; then
-    JP5_D4XX_DTSI="tegra194-camera-d4xx-dual.dtsi"
+    XAVIER_AGX_JP5_D4XX_DTSI="tegra194-camera-d4xx-dual.dtsi"
     shift
 fi
 
@@ -29,7 +30,7 @@ cd "$DEVDIR"
 
 # set JP4 devicetree
 if [[ "$JETPACK_VERSION" == "4.6.1" ]]; then
-    JP5_D4XX_DTSI="tegra194-camera-d4xx.dtsi"
+    XAVIER_AGX_JP5_D4XX_DTSI="tegra194-camera-d4xx.dtsi"
 fi
 if [[ "$JETPACK_VERSION" == "6.0" ]]; then
     D4XX_SRC_DST=nvidia-oot
@@ -54,6 +55,9 @@ if [[ "$JETPACK_VERSION" == "6.0" ]]; then
     apply_external_patches $1 hardware/nvidia/t23x/nv-public
 else
     apply_external_patches $1 hardware/nvidia/platform/t19x/galen/kernel-dts
+    if [[ "$JETPACK_VERSION" == "5.0.2" ]]; then
+        apply_external_patches $1 hardware/nvidia/platform/t23x/concord/kernel-dts
+    fi
 fi
 
 # For a common driver for JP4 + JP5 we override the i2c driver and ignore the previous that was created from patches
@@ -62,5 +66,8 @@ if [[ "$JETPACK_VERSION" == "6.0" ]]; then
     # jp6 overlay
     cp $DEVDIR/hardware/realsense/tegra234-camera-d4xx-overlay*.dts $DEVDIR/$1/hardware/nvidia/t23x/nv-public/overlay/
 else
-    cp $DEVDIR/hardware/realsense/$JP5_D4XX_DTSI $DEVDIR/$1/hardware/nvidia/platform/t19x/galen/kernel-dts/common/tegra194-camera-d4xx.dtsi
+    cp $DEVDIR/hardware/realsense/$XAVIER_AGX_JP5_D4XX_DTSI $DEVDIR/$1/hardware/nvidia/platform/t19x/galen/kernel-dts/common/tegra194-camera-d4xx.dtsi
+    if [[ "$JETPACK_VERSION" == "5.0.2" ]]; then
+        cp $DEVDIR/hardware/realsense/$ORIN_AGX_JP5_D4XX_DTSI $DEVDIR/$1/hardware/nvidia/platform/t23x/concord/kernel-dts/cvb/tegra234-camera-d4xx.dtsi
+    fi
 fi
